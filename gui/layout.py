@@ -9,7 +9,7 @@ class Layout:
         """
         st.markdown(
             """
-            <h2 style='text-align: center;'>Chat with your PDF 💬</h1>
+            <h2 style='text-align: center;'>Red Hat IT - Summit - InstructLab Demo 🐶</h1>
             """,
             unsafe_allow_html=True,
         )
@@ -42,3 +42,9 @@ class Layout:
 
             is_ready = submit_button and user_input
         return is_ready, user_input
+    
+    def advanced_options(self):
+        with st.expander("Advanced Options"):
+            show_all_chunks = st.checkbox("Show all chunks retrieved from vector search")
+            show_full_doc = st.checkbox("Show parsed contents of the document")
+        return show_all_chunks, show_full_doc

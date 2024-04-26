@@ -11,12 +11,17 @@ COPY . /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Adjust permissions to be OpenShift compatible
+# OpenShift will run the container using an arbitrarily assigned user ID,
+# so we need to make sure that user has the necessary permissions.
 RUN mkdir -p /.cache/huggingface/hub && \
-    chmod -R 755 /.cache/huggingface/hub && \
+    chmod -R 777 /.cache/huggingface/hub && \
     mkdir -p /.cache/torch/sentence_transformers/sentence-transformers_all-mpnet-base-v2 && \
-    chmod -R 755 /.cache/torch/sentence_transformers/sentence-transformers_all-mpnet-base-v2 && \
-    chown -R 1000720001:1000720001 /.cache  && \
-    chown -R 1000720001:1000720001 /app
+    chmod -R 777 /.cache/torch/sentence_transformers/sentence-transformers_all-mpnet-base-v2 && \
+    chmod -R 777 /.cache && \
+    chmod -R 777 /app
+
+# No USER command is needed since OpenShift will assign a user
 
 EXPOSE 8501
 

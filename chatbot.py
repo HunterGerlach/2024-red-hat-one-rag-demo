@@ -20,4 +20,19 @@ class Chatbot:
 
         result = chain({"question": query}, return_only_outputs=True)
 
-        return result["answer"]
+        return result["answer"], self.rds_retriever
+
+
+
+
+    # def conversational_chat(self, query):
+    #     results = {}
+    #     for model_name, llm in self.llms.items():
+    #         chain = ConversationalRetrievalChain.from_llm(
+    #             llm=llm,
+    #             memory=st.session_state["history"],
+    #             retriever=self.rds_retrievers[model_name]
+    #         )
+    #         result = chain({"question": query}, return_only_outputs=True)
+    #         results[model_name] = result["answer"]
+    #     return results
