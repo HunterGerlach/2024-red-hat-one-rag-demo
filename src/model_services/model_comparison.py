@@ -1,15 +1,11 @@
 import streamlit as st
 import threading
-
-class ModelConfig:
-    def __init__(self, name, description, endpoint, uses_rag, model_name=None):
-        self.name = name
-        self.description = description
-        self.endpoint = endpoint
-        self.uses_rag = uses_rag
-        self.model_name = model_name
+from model_services.model_config import ModelConfig
 
 class ModelComparison:
+    """
+    Class to manage model comparison operations.
+    """
     def __init__(self, number_of_models=4):
         self.number_of_models = number_of_models
         self.all_models = [

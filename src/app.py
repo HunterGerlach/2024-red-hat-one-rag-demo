@@ -5,10 +5,10 @@ from langchain.llms import HuggingFaceTextGenInference
 from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate
 
-from gui.history import ChatHistory
-from gui.layout import Layout
-from gui.sidebar import Sidebar, Utilities
-from gui.model_comparison import ModelComparison
+from chat_management.chat_history import ChatHistory
+from ui_components.layout import Layout
+from ui_components.sidebar import Sidebar, Utilities
+from model_services.model_comparison import ModelComparison
 from snowflake import SnowflakeGenerator
 from langchain.schema import HumanMessage, AIMessage
 

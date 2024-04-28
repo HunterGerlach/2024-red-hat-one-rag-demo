@@ -4,8 +4,12 @@ from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import ChatPromptTemplate
 
-from gui.history import ChatHistory
+from chat_management.chat_history import ChatHistory
+
 class Chatbot:
+    """
+    Class to manage chatbot operations.
+    """
     def __init__(self, rds_retriever, llm, history_key="chat_history"):
         self.rds_retriever = rds_retriever
         self.llm = llm

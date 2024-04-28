@@ -8,6 +8,9 @@ from langchain.vectorstores.redis import Redis
 
 
 class DocEmbedding:
+    """
+    Class to manage document embeddings.
+    """
 
     def __init__(self):
         self.embeddings = HuggingFaceEmbeddings()

@@ -5,6 +5,9 @@ from langchain.schema import HumanMessage, AIMessage
 from streamlit_chat import message
 
 class ChatHistory:
+    """
+    Class to manage the chat history in a Streamlit app.
+    """
     def __init__(self, history_key="chat_history"):
         self.history_key = history_key
         if history_key not in st.session_state:
