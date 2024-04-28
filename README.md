@@ -17,14 +17,16 @@ pip install -r requirements.txt
 - Run the container:
 
 ```sh
-podman run --rm -d --name redis_vector_db -v $PWD/redis.conf:/usr/local/etc/redis/redis.conf -p 6379:6379 redis-vector-db:latest
+podman run --rm -d --network redis-net --name redis_vector_db -v $PWD/redis.conf:/usr/local/etc/redis/redis.conf:Z -p 6379:6379 redis-vector-db:latest
 ```
 
 - Run Redis Insights container to view the data in the db:
 
 ```sh
-podman run -d --rm -v redisinsight:/db -p 8001:8001 redislabs/redisinsight:latest
+podman run -d --rm --network redis-net -v redisinsight:/db -p 5540:5540 redislabs/redisinsight:latest
 ```
+
+To connect Redis Insights, simply use `redis_vector_db` as the host with 6379 as the port and the password that is specified in redis.conf
 
 ## Application Setup
 

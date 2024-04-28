@@ -70,6 +70,7 @@ class Sidebar:
             st.error('Username/password is incorrect')
         elif st.session_state["authentication_status"] is None:
             st.warning('Please enter your username and password')
+        return name, authentication_status, username
 
     def model_selector(self):
         model = st.selectbox(label="Model", options=self.MODEL_OPTIONS)
@@ -150,7 +151,7 @@ class Utilities:
         """
         Handles the file upload and displays the uploaded file
         """
-        uploaded_file = st.sidebar.file_uploader("upload", type="pdf", label_visibility="collapsed")
+        uploaded_file = st.sidebar.file_uploader("upload", type="pdf", label_visibility="collapsed")#| st.file_uploader("upload", type="text", label_visibility="collapsed") | st.sidebar.file_uploader("upload", type="docx", label_visibility="collapsed")
         doc_content = ""
         if uploaded_file is not None:
             if uploaded_file.type == "application/pdf":
@@ -161,7 +162,7 @@ class Utilities:
                 doc_content = Utilities.read_docx(uploaded_file)
         else:
             st.sidebar.info(
-                "Upload your PDF file to get started", icon="👆"
+                "Upload a PDF file to get started", icon="👆"
             )
             st.session_state["reset_chat"] = True
         return uploaded_file, doc_content
@@ -172,7 +173,11 @@ class Utilities:
         Sets up the chatbot with the uploaded file, model, and temperature
         """
         embeds = DocEmbedding()
-        with st.spinner("Processing..."):
+        with st.spinner("Embedding document..."):
+            # first check if uploaded file is not None
+            if uploaded_file is None:
+                # st.error("Please upload a file to get started.")
+                return
             uploaded_file.seek(0)
             file = uploaded_file.read()
 

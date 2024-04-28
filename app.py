@@ -11,113 +11,146 @@ from gui.sidebar import Sidebar, Utilities
 from gui.model_comparison import ModelComparison
 from snowflake import SnowflakeGenerator
 
-if __name__ == '__main__':
-    st.set_page_config(layout="wide", page_icon="💬", page_title="ChatPDF")
-    layout, sidebar, utils = Layout(), Sidebar(), Utilities()
-    configs = utils.load_config_details()
-    
-    username = configs["redis"]["username"]
-    password = configs["redis"]["password"]
-    host = configs["redis"]["host"]
-    port = configs["redis"]["port"]
-    redis_url = f"redis://{username}:{password}@{host}:{port}"
+def load_configuration():
+    """Load configuration details from utilities."""
+    return Utilities().load_config_details()
 
-    inference_server_url= configs["inference_server"]["url"]
+def initialize_default_session_variables():
+    """Set default values for session variables."""
+    default_values = {
+        'ready': False,
+        'authentication_status': False,
+        'reset_chat': False
+    }
+    for key, value in default_values.items():
+        st.session_state.setdefault(key, value)
+
+def is_configuration_valid(configurations):
+    """Validate that the configuration is not empty and return a boolean."""
+    is_valid = bool(configurations)
+    if not is_valid:
+        st.error("Configuration details are missing or incomplete.")
+        layout.display_login_error_message()
+    return is_valid
 
 
-    layout.show_header()
-    if not configs:
-        layout.show_loging_details_missing()
+def build_redis_connection_url(redis_config):
+    """Build and return a Redis connection URL from the given configuration."""
+    url_format = "redis://{username}:{password}@{host}:{port}"
+    return url_format.format(
+        username=redis_config["username"],
+        password=redis_config["password"],
+        host=redis_config["host"],
+        port=redis_config["port"]
+    )
+
+def create_inference_model(inference_config):
+    """Create and return an inference model based on the provided configuration."""
+    if inference_config["type"] == "ollama":
+        return Ollama(model="mistral")
     else:
-        
-        sidebar.show_logo(configs)
-        sidebar.show_login(configs)
-        pdf, doc_content = utils.handle_upload()
+        return HuggingFaceTextGenInference(
+            inference_server_url=os.getenv('INFERENCE_SERVER_URL', inference_config["url"]),
+            max_new_tokens=int(os.getenv('MAX_NEW_TOKENS', '20')),
+            top_k=int(os.getenv('TOP_K', '3')),
+            top_p=float(os.getenv('TOP_P', '0.95')),
+            typical_p=float(os.getenv('TYPICAL_P', '0.95')),
+            temperature=float(os.getenv('TEMPERATURE', '0.9')),
+            repetition_penalty=float(os.getenv('REPETITION_PENALTY', '1.01')),
+            streaming=False,
+            verbose=False
+        )
 
+def attempt_pdf_upload(upload_handler):
+    """Upload a PDF and return file and content if successful, or None otherwise."""
+    pdf_file, content = upload_handler()
+    if not pdf_file:
+        st.info("Upload a PDF file to get started", icon="👈")
+        return None, None
+    return pdf_file, content
+
+def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url):
+    """Initialize the chatbot if it's not already present in the session state."""
+    if 'chatbot' not in session_state:
+        index_generator = SnowflakeGenerator(42)
+        index_name = str(next(index_generator))
+        print("Index Name: " + index_name)
+        chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml")
+        session_state["chatbot"] = chatbot
+
+def run_model_comparisons(model_comparison_tool, model_configs):
+    """Run model comparisons and return the results."""
+    return model_comparison_tool.run_model_comparisons(model_configs)
+
+def display_model_comparison_results(model_comparison_tool, results):
+    """Display the results of model comparisons."""
+    model_comparison_tool.display_results(results)
+
+def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
+    is_ready, user_input, submit_button = layout.prompt_form()
+    if is_ready:
+        output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
+        try:
+            results = run_model_comparisons(model_comparison, model_configs)
+            display_model_comparison_results(model_comparison, results)
+            history.generate_messages(response_container)
+        except Exception as e:
+            st.error(f"Error during model comparisons: {e}")
+    if st.session_state["reset_chat"]:
+        history.reset()
+
+def load_and_validate_config():
+    """Load and validate configuration, return configs if valid, otherwise stop the app."""
+    configs = Utilities().load_config_details()
+    if not is_configuration_valid(configs):
+        st.stop()
+    return configs
+
+def initialize_ui(configs):
+    """Initialize the UI components and return layout and sidebar."""
+    st.set_page_config(layout="wide", page_icon="🐶", page_title="Red Hat - Summit - InstructLab Demo")
+    layout = Layout()
+    sidebar = Sidebar()
+    layout.show_header()
+    sidebar.show_logo(configs)
+    return layout, sidebar
+
+def main_application_logic(configs, layout, sidebar):
+    """Handle the main application logic."""
+    redis_url = build_redis_connection_url(configs['redis'])
+    llm = create_inference_model(configs['inference_server'])
+
+    sidebar.show_login(configs)
+    if st.session_state["authentication_status"]:
+        process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url)
+
+def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
+    """Process the flow for an authenticated user."""
+    utils = Utilities()
+    try:
+        pdf, doc_content = attempt_pdf_upload(utils.handle_upload)
         if pdf:
+            st.header("GenAI Architecture Comparison Tool")
             sidebar.show_options()
 
-            st.header("Model Comparison Tool")
-            model_comparison = ModelComparison(number_of_models=4)  # Configure for 3 models
-            model_comparison.display_model_comparison()
-            # show_all_chunks, show_full_doc = layout.advanced_options()
+            model_comparison = ModelComparison(number_of_models=4)
+            model_configs = model_comparison.collect_model_configs()
+            initialize_chatbot_if_absent(st.session_state, utils, pdf, llm, redis_url)
+            st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
+            st.session_state["ready"] = True
 
-            # Assume 'doc' and 'index' are variables holding your document content and indexed data
-            # doc = "This is the full document content..."
-            # index = "Index details here..."
-            # Assuming the doc_content is filled
-            doc = doc_content
-            index = ""
-
-            # if show_full_doc:
-            #     with st.expander("Full Document Contents"):
-            #         st.text(doc)  # Show full document contents
-
-            # if show_all_chunks:
-            #     with st.expander("Vector Results"):
-            #         st.text(index)  # Show details of the indexed chunks or embedding results
-
-            try:
-                if 'chatbot' not in st.session_state:
-                    
-                    if configs["inference_server"]["type"] == "ollama":
-                        llm = Ollama(model="mistral")
-                    else:
-                        llm = HuggingFaceTextGenInference(
-                            inference_server_url=os.environ.get('INFERENCE_SERVER_URL'),
-                            max_new_tokens=int(os.environ.get('MAX_NEW_TOKENS', '512')),
-                            top_k=int(os.environ.get('TOP_K', '3')),
-                            top_p=float(os.environ.get('TOP_P', '0.95')),
-                            typical_p=float(os.environ.get('TYPICAL_P', '0.95')),
-                            temperature=float(os.environ.get('TEMPERATURE', '0.9')),
-                            repetition_penalty=float(os.environ.get('REPETITION_PENALTY', '1.01')),
-                            streaming=False,
-                            verbose=False
-                        )
-                    
-                    indexGenerator = SnowflakeGenerator(42)
-                    index_name = str(next(indexGenerator))
-                    print("Index Name: " + index_name)
-                    index = index_name
-                    
-                    chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml")
-                    st.session_state["chatbot"] = chatbot
-
-                # if st.session_state.get("ready"):
-                #     history = ChatHistory()
-                #     history.initialize(pdf.name)
-
-                #     response_container, prompt_container = st.container(), st.container()
-                #     with prompt_container:
-                #         user_input = st.text_input("Ask a question:", key="user_query")
-                #         if st.button("Ask"):
-                #             results = st.session_state["chatbot"].conversational_chat(user_input)
-                #             for model_name, answer in results.items():
-                #                 with response_container:
-                #                     st.markdown(f"### Response from {model_name}")
-                #                     st.write(answer)
+            history = ChatHistory()
+            response_container, prompt_container = st.container(), st.container()
+            manage_responses(history, response_container, prompt_container, model_comparison, model_configs)
+    except Exception as e:
+        st.error(f"Unexpected error during PDF upload or processing: {e}")
+        st.stop()
 
 
-                if st.session_state["ready"]:
-                    history = ChatHistory()
-                    history.initialize(pdf.name)
-
-                    response_container, prompt_container = st.container(), st.container()
-
-                    with prompt_container:
-                        is_ready, user_input = layout.prompt_form()
-
-                        if st.session_state["reset_chat"]:
-                            history.reset()
-
-                        if is_ready:
-                            with st.spinner("Processing query..."):
-                                output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
-                                index = embeddings
-                    history.generate_messages(response_container)
-
-            except Exception as e:
-                st.error(f"{e}")
-                st.stop()
-
+if __name__ == '__main__':
+    initialize_default_session_variables()
+    configs = load_and_validate_config()
+    layout, sidebar = initialize_ui(configs)
+    utils = Utilities()
+    main_application_logic(configs, layout, sidebar)
     sidebar.about()

@@ -1,64 +1,74 @@
 import streamlit as st
+import threading
+
+class ModelConfig:
+    def __init__(self, name, description, endpoint, uses_rag, model_name=None):
+        self.name = name
+        self.description = description
+        self.endpoint = endpoint
+        self.uses_rag = uses_rag
+        self.model_name = model_name
 
 class ModelComparison:
     def __init__(self, number_of_models=4):
         self.number_of_models = number_of_models
-        # Dictionary mapping model types to their respective endpoints
-        self.model_endpoints = {
-            'Base Model': 'http://0.0.0.0:11434',
-            'Base Model + RAG': 'https://api.ollama.ai/base-rag',
-            'InstructLab-Aligned Model': 'https://api.ollama.ai/instruct-aligned',
-            'InstructLab-Aligned Model + RAG': 'https://api.ollama.ai/instruct-rag'
-        }
-        # Redis connection setup would normally go here
-        self.redis_client = None  # Placeholder for Redis client
+        self.all_models = [
+            ModelConfig('Base Model', 'A baseline model', 'http://0.0.0.0:11434', False, 'granite-7b'),
+            ModelConfig('Base Model + RAG', 'Baseline model with RAG', 'https://api.ollama.ai/base-rag', True, 'granite-7b'),
+            ModelConfig('InstructLab-Aligned Model', 'Instruct model with alignments', 'https://api.ollama.ai/instruct-aligned', False, 'granite-7b-instruct-aligned'),
+            ModelConfig('InstructLab-Aligned Model + RAG', 'Instruct model with alignments and RAG', 'https://api.ollama.ai/instruct-rag', True, 'granite-7b-instruct-aligned')
+        ]
 
-    def display_model_comparison(self):
-        model_configs = self.collect_model_configs()
-        if st.button("Run Comparison"):
-            results = self.run_model_comparisons(model_configs)
-            self.display_results(results)
+    def display_model_configs(self, model_configs):
+        cols = st.columns(self.number_of_models)
+        for i, col in enumerate(cols):
+            with col:
+                model_config = model_configs[i]
+                st.markdown(f"#### Architecture {i+1} Configuration")
+                st.write("Endpoint:", model_config.endpoint)
+                st.write("Description:", model_config.description)
+                st.write("Performing RAG:", model_config.uses_rag)
+                st.write("Model Name:", model_config.model_name)
+
 
     def collect_model_configs(self):
         cols = st.columns(self.number_of_models)
         model_configs = []
-        model_options = list(self.model_endpoints.keys())
+        model_options = {model.name: model for model in self.all_models}
         for i, col in enumerate(cols):
             with col:
                 st.markdown(f"#### Architecture {i+1} Configuration")
-                model_type = st.selectbox("Architecture", model_options, index=i, key=f"model_type_{i}")
-                st.write("Endpoint:", self.model_endpoints[model_type])
-                # Optionally display Redis usage if applicable
-                if model_type.endswith('+ RAG') and (i == 1 or i == 3):
-                    st.write("Using Redis for RAG/Vector Search")
-                model_configs.append(model_type)
+                selected_model_name = st.selectbox(
+                    "Choose Architecture", 
+                    list(model_options.keys()), 
+                    index=i, 
+                    key=f"model_select_{i}"
+                )
+                selected_model = model_options[selected_model_name]
+                st.write("Endpoint:", selected_model.endpoint)
+                st.write("Description:", selected_model.description)
+                st.write("Performing RAG:", selected_model.uses_rag)
+                st.write("Model Name:", selected_model.model_name)
+                model_configs.append(selected_model)
         return model_configs
 
+
     def run_model_comparisons(self, model_configs):
-        results = []
-        for i, model_type in enumerate(model_configs):
-            endpoint = self.model_endpoints[model_type]
-            if model_type.endswith('+ RAG') and (i == 1 or i == 3):
-                # Simulate Redis operation for RAG/Vector Search
-                result = self.run_redis_operations(model_type, endpoint)
+        results = {}
+        for model in model_configs:
+            if model.uses_rag:
+                result = self.run_redis_operations(model)
             else:
-                result = f"Result from {model_type} at {endpoint}"
-            results.append(result)
+                result = f"Result from {model.name} at {model.endpoint}"
+            results[model.name] = result
         return results
 
-    def run_redis_operations(self, model_type, endpoint):
-        # Placeholder for Redis-based operations
-        # This function would handle RAG or vector searches using Redis
-        return f"Result from {model_type} with Redis-based vector search at {endpoint}"
+    def run_redis_operations(self, model):
+        return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
     def display_results(self, results):
-        cols = st.columns(self.number_of_models)
-        for idx, result in enumerate(results):
-            with cols[idx]:
-                st.write(result)
-        columns = st.columns(len(results))
-        for (col, (model_name, answer)) in zip(columns, results.items()):
+        cols = st.columns(len(results))
+        for col, (model_name, result) in zip(cols, results.items()):
             with col:
                 st.markdown(f"### Response from {model_name}")
-                st.write(answer)
-
+                st.write(result)
