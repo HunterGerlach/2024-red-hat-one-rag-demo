@@ -8,13 +8,7 @@ import tempfile
 from chat_management.chatbot import Chatbot
 from embeddings.doc_embedding import DocEmbedding
 
-class Utilities:
-    @staticmethod
-    def load_config_details():
-        with open('config.yaml') as file:
-            config = yaml.load(file, Loader=SafeLoader)
-        return config
-    
+class Utilities:    
     def read_pdf(file):
         import PyPDF2
         reader = PyPDF2.PdfReader(file)

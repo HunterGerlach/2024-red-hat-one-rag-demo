@@ -8,13 +8,11 @@ from langchain.prompts import PromptTemplate
 from chat_management.chat_history import ChatHistory
 from ui_components.layout import Layout
 from ui_components.sidebar import Sidebar, Utilities
+from config_manager import ConfigManager
 from model_services.model_comparison import ModelComparison
 from snowflake import SnowflakeGenerator
 from langchain.schema import HumanMessage, AIMessage
-
-def load_configuration():
-    """Load configuration details from utilities."""
-    return Utilities().load_config_details()
+from vector_db.redis_manager import RedisManager
 
 def initialize_default_session_variables():
     """Set default values for session variables."""
@@ -26,24 +24,15 @@ def initialize_default_session_variables():
     for key, value in default_values.items():
         st.session_state.setdefault(key, value)
 
-def is_configuration_valid(configurations):
-    """Validate that the configuration is not empty and return a boolean."""
-    is_valid = bool(configurations)
-    if not is_valid:
-        st.error("Configuration details are missing or incomplete.")
-        layout.display_login_error_message()
-    return is_valid
-
-
-def build_redis_connection_url(redis_config):
-    """Build and return a Redis connection URL from the given configuration."""
-    url_format = "redis://{username}:{password}@{host}:{port}"
-    return url_format.format(
-        username=redis_config["username"],
-        password=redis_config["password"],
-        host=redis_config["host"],
-        port=redis_config["port"]
-    )
+# def build_redis_connection_url(redis_config):
+#     """Build and return a Redis connection URL from the given configuration."""
+#     url_format = "redis://{username}:{password}@{host}:{port}"
+#     return url_format.format(
+#         username=redis_config["username"],
+#         password=redis_config["password"],
+#         host=redis_config["host"],
+#         port=redis_config["port"]
+#     )
 
 def create_inference_model(inference_config):
     """Create and return an inference model based on the provided configuration."""
@@ -80,7 +69,6 @@ def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url, hist
         chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml", chat_history.history)
         session_state["chatbot"] = chatbot
 
-
 def run_model_comparisons(model_comparison_tool, model_configs):
     """Run model comparisons and return the results."""
     return model_comparison_tool.run_model_comparisons(model_configs)
@@ -88,7 +76,6 @@ def run_model_comparisons(model_comparison_tool, model_configs):
 def display_model_comparison_results(model_comparison_tool, results):
     """Display the results of model comparisons."""
     model_comparison_tool.display_results(results)
-
 
 def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
     is_ready, user_input, submit_button = layout.prompt_form()
@@ -112,8 +99,8 @@ def manage_responses(history, response_container, prompt_container, model_compar
 
 def load_and_validate_config():
     """Load and validate configuration, return configs if valid, otherwise stop the app."""
-    configs = Utilities().load_config_details()
-    if not is_configuration_valid(configs):
+    configs = ConfigManager.load_config_details()
+    if not ConfigManager.validate_configurations(configs):
         st.stop()
     return configs
 
@@ -128,7 +115,7 @@ def initialize_ui(configs):
 
 def main_application_logic(configs, layout, sidebar):
     """Handle the main application logic."""
-    redis_url = build_redis_connection_url(configs['redis'])
+    redis_url = RedisManager.build_redis_connection_url(configs['redis'])
     llm = create_inference_model(configs['inference_server'])
 
     sidebar.show_login(configs)
