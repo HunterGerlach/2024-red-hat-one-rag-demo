@@ -64,10 +64,39 @@ class ModelComparison:
     def run_redis_operations(self, model):
         return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
+    # def display_results(self, results):
+    #     cols = st.columns(len(results))
+    #     for col, (model_name, messages) in zip(cols, results.items()):
+    #         with col:
+    #             st.markdown(f"### Full Conversation from {model_name}")
+    #             for msg in messages:  # messages is now a list of strings
+    #                 st.write(msg)
+
+    # def display_results(self, results):
+    #     cols = st.columns(len(results))
+    #     for col, (model_name, messages) in zip(cols, results.items()):
+    #         with col:
+    #             st.markdown(f"### Full Conversation from {model_name}")
+    #             # Use markdown for each message to format it correctly
+    #             for msg in messages:  # Assuming msg is a string
+    #                 # Use triple backticks for block code formatting or other markdown syntax as needed
+    #                 st.markdown(f"```\n{msg}\n```")
+
     def display_results(self, results):
         cols = st.columns(len(results))
         for col, (model_name, messages) in zip(cols, results.items()):
             with col:
                 st.markdown(f"### Full Conversation from {model_name}")
-                for msg in messages:  # messages is now a list of strings
-                    st.write(msg)
+                for msg in messages:
+                    # Extract the message content after the "content=" part
+                    # Assuming each message is a string that starts with "content='...'"
+
+                    # Find the start of the actual content, add len("content=") to get the starting index
+                    start_idx = msg.find("content=") + len("content=")
+                    # Extract the message, trimming the quotes
+                    message_content = msg[start_idx:].strip("'")
+
+                    # Display the message content
+                    st.write(message_content)  # You can use st.markdown if you need markdown formatting
+
+

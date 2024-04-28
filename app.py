@@ -10,6 +10,7 @@ from gui.layout import Layout
 from gui.sidebar import Sidebar, Utilities
 from gui.model_comparison import ModelComparison
 from snowflake import SnowflakeGenerator
+from langchain.schema import HumanMessage, AIMessage
 
 def load_configuration():
     """Load configuration details from utilities."""
@@ -87,6 +88,7 @@ def run_model_comparisons(model_comparison_tool, model_configs):
 def display_model_comparison_results(model_comparison_tool, results):
     """Display the results of model comparisons."""
     model_comparison_tool.display_results(results)
+
 
 def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
     is_ready, user_input, submit_button = layout.prompt_form()
