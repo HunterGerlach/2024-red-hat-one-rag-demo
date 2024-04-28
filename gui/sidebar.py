@@ -168,16 +168,15 @@ class Utilities:
         return uploaded_file, doc_content
 
     @staticmethod
-    def setup_chatbot(uploaded_file, llm, redis_url, index_name, schema):
+    def setup_chatbot(uploaded_file, llm, redis_url, index_name, schema, chat_history):
         """
-        Sets up the chatbot with the uploaded file, model, and temperature
+        Sets up the chatbot with the uploaded file, model, and chat history
         """
         embeds = DocEmbedding()
         with st.spinner("Embedding document..."):
-            # first check if uploaded file is not None
             if uploaded_file is None:
-                # st.error("Please upload a file to get started.")
-                return
+                st.error("Please upload a file to get started.")
+                return None
             uploaded_file.seek(0)
             file = uploaded_file.read()
 

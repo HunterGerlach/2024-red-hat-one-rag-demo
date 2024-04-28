@@ -66,6 +66,13 @@ class ModelComparison:
     def run_redis_operations(self, model):
         return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
+    # def display_results(self, results):
+    #     cols = st.columns(len(results))
+    #     for col, (model_name, result) in zip(cols, results.items()):
+    #         with col:
+    #             st.markdown(f"### Response from {model_name}")
+    #             st.write(result)
+
     def display_results(self, results):
         cols = st.columns(len(results))
         for col, (model_name, result) in zip(cols, results.items()):

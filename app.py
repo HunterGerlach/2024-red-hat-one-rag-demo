@@ -69,18 +69,37 @@ def attempt_pdf_upload(upload_handler):
         return None, None
     return pdf_file, content
 
-def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url):
+def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url, history_key="chat_history"):
     """Initialize the chatbot if it's not already present in the session state."""
     if 'chatbot' not in session_state:
         index_generator = SnowflakeGenerator(42)
         index_name = str(next(index_generator))
         print("Index Name: " + index_name)
-        chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml")
+        chat_history = ChatHistory(history_key)
+        chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml", chat_history.history)
         session_state["chatbot"] = chatbot
+
 
 def run_model_comparisons(model_comparison_tool, model_configs):
     """Run model comparisons and return the results."""
     return model_comparison_tool.run_model_comparisons(model_configs)
+
+# def display_model_comparison_results(model_comparison_tool, results):
+#     """Display the results of model comparisons."""
+#     model_comparison_tool.display_results(results)
+
+# def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
+#     is_ready, user_input, submit_button = layout.prompt_form()
+#     if is_ready:
+#         output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
+#         try:
+#             results = run_model_comparisons(model_comparison, model_configs)
+#             display_model_comparison_results(model_comparison, results)
+#             history.generate_messages(response_container)
+#         except Exception as e:
+#             st.error(f"Error during model comparisons: {e}")
+#     if st.session_state["reset_chat"]:
+#         history.reset()
 
 def display_model_comparison_results(model_comparison_tool, results):
     """Display the results of model comparisons."""
@@ -90,14 +109,17 @@ def manage_responses(history, response_container, prompt_container, model_compar
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
         output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
+        simulated_outputs = [output] * 4  # Simulate 4 different model outputs (actually the same for now)
+        model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]  # Placeholder names for different models
         try:
-            results = run_model_comparisons(model_comparison, model_configs)
+            results = {name: output for name, output in zip(model_names, simulated_outputs)}
             display_model_comparison_results(model_comparison, results)
             history.generate_messages(response_container)
         except Exception as e:
             st.error(f"Error during model comparisons: {e}")
     if st.session_state["reset_chat"]:
         history.reset()
+
 
 def load_and_validate_config():
     """Load and validate configuration, return configs if valid, otherwise stop the app."""
@@ -139,13 +161,13 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
             st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
             st.session_state["ready"] = True
 
-            history = ChatHistory()
+            # history = ChatHistory()
+            history_model_1 = ChatHistory(history_key="chat_history")
             response_container, prompt_container = st.container(), st.container()
-            manage_responses(history, response_container, prompt_container, model_comparison, model_configs)
+            manage_responses(history_model_1, response_container, prompt_container, model_comparison, model_configs)
     except Exception as e:
         st.error(f"Unexpected error during PDF upload or processing: {e}")
         st.stop()
-
 
 if __name__ == '__main__':
     initialize_default_session_variables()
