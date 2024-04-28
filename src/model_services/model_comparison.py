@@ -95,4 +95,11 @@ class ModelComparison:
                     # Display the message content
                     st.write(message_content)  # You can use st.markdown if you need markdown formatting
 
+    def run_model_comparisons(model_comparison_tool, model_configs):
+        """Run model comparisons and return the results."""
+        return model_comparison_tool.run_model_comparisons(model_configs)
+
+    def display_model_comparison_results(model_comparison_tool, results):
+        """Display the results of model comparisons."""
+        model_comparison_tool.display_results(results)
 
