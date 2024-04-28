@@ -35,3 +35,7 @@ class ChatHistory:
                             message(msg.content, is_user=True, key=f"{i}_user_{history_key}", avatar_style="adventurer")
                         elif isinstance(msg, AIMessage):
                             message(msg.content, key=f"{i}_{history_key}", avatar_style="thumbs")
+
+    def get_full_conversation(self):
+        """Retrieve the full conversation history as a list of messages."""
+        return [str(message) for message in self.history.chat_memory.messages]

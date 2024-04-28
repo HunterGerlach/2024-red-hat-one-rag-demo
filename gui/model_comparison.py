@@ -30,7 +30,6 @@ class ModelComparison:
                 st.write("Performing RAG:", model_config.uses_rag)
                 st.write("Model Name:", model_config.model_name)
 
-
     def collect_model_configs(self):
         cols = st.columns(self.number_of_models)
         model_configs = []
@@ -52,7 +51,6 @@ class ModelComparison:
                 model_configs.append(selected_model)
         return model_configs
 
-
     def run_model_comparisons(self, model_configs):
         results = {}
         for model in model_configs:
@@ -66,16 +64,10 @@ class ModelComparison:
     def run_redis_operations(self, model):
         return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
-    # def display_results(self, results):
-    #     cols = st.columns(len(results))
-    #     for col, (model_name, result) in zip(cols, results.items()):
-    #         with col:
-    #             st.markdown(f"### Response from {model_name}")
-    #             st.write(result)
-
     def display_results(self, results):
         cols = st.columns(len(results))
-        for col, (model_name, result) in zip(cols, results.items()):
+        for col, (model_name, messages) in zip(cols, results.items()):
             with col:
-                st.markdown(f"### Response from {model_name}")
-                st.write(result)
+                st.markdown(f"### Full Conversation from {model_name}")
+                for msg in messages:  # messages is now a list of strings
+                    st.write(msg)

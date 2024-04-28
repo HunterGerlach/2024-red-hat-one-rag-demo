@@ -84,23 +84,6 @@ def run_model_comparisons(model_comparison_tool, model_configs):
     """Run model comparisons and return the results."""
     return model_comparison_tool.run_model_comparisons(model_configs)
 
-# def display_model_comparison_results(model_comparison_tool, results):
-#     """Display the results of model comparisons."""
-#     model_comparison_tool.display_results(results)
-
-# def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
-#     is_ready, user_input, submit_button = layout.prompt_form()
-#     if is_ready:
-#         output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
-#         try:
-#             results = run_model_comparisons(model_comparison, model_configs)
-#             display_model_comparison_results(model_comparison, results)
-#             history.generate_messages(response_container)
-#         except Exception as e:
-#             st.error(f"Error during model comparisons: {e}")
-#     if st.session_state["reset_chat"]:
-#         history.reset()
-
 def display_model_comparison_results(model_comparison_tool, results):
     """Display the results of model comparisons."""
     model_comparison_tool.display_results(results)
@@ -109,17 +92,21 @@ def manage_responses(history, response_container, prompt_container, model_compar
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
         output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
-        simulated_outputs = [output] * 4  # Simulate 4 different model outputs (actually the same for now)
-        model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]  # Placeholder names for different models
+        # Simulate 4 different model outputs (actually the same for now)
+        model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]
         try:
-            results = {name: output for name, output in zip(model_names, simulated_outputs)}
-            display_model_comparison_results(model_comparison, results)
+            # Generate a full conversation for the simulation
+            full_conversation = history.get_full_conversation()
+            full_conversation_histories = {
+                model_name: full_conversation for model_name in model_names
+            }
+            # Now display the full conversation for each model
+            display_model_comparison_results(model_comparison, full_conversation_histories)
             history.generate_messages(response_container)
         except Exception as e:
             st.error(f"Error during model comparisons: {e}")
     if st.session_state["reset_chat"]:
         history.reset()
-
 
 def load_and_validate_config():
     """Load and validate configuration, return configs if valid, otherwise stop the app."""
