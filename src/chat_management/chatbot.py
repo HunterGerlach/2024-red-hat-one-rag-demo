@@ -4,6 +4,7 @@ from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import ChatPromptTemplate
 from snowflake import SnowflakeGenerator
+from langchain.schema import HumanMessage, AIMessage
 
 from chat_management.chat_history import ChatHistory
 
@@ -36,3 +37,10 @@ class Chatbot:
         result = chain({"question": query}, return_only_outputs=True)
 
         return result["answer"], self.rds_retriever
+    
+    # def manage_chat_responses(self, user_input):
+    #     """Generate and handle chatbot responses."""
+    #     output, embeddings = self.conversational_chat(user_input)
+    #     self.history.add_message(HumanMessage(content=user_input))
+    #     self.history.add_message(AIMessage(content=output))
+    #     return output, embeddings

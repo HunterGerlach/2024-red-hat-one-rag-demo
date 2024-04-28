@@ -103,3 +103,13 @@ class ModelComparison:
         """Display the results of model comparisons."""
         model_comparison_tool.display_results(results)
 
+    # def manage_comparison_display(self, full_conversation_histories, response_container):
+    #     """Display the model comparison results."""
+    #     try:
+    #         # Now display the full conversation for each model
+    #         self.display_model_comparison_results(full_conversation_histories)
+    #         # Assuming history.generate_messages() is responsible for rendering messages
+    #         # This method would now need to be called where the messages are actually being generated
+    #     except Exception as e:
+    #         st.error(f"Error during model comparisons: {e}")
+

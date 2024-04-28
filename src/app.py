@@ -26,18 +26,11 @@ def initialize_default_session_variables():
     for key, value in default_values.items():
         st.session_state.setdefault(key, value)
 
-# def run_model_comparisons(model_comparison_tool, model_configs):
-#     """Run model comparisons and return the results."""
-#     return model_comparison_tool.run_model_comparisons(model_configs)
-
-# def display_model_comparison_results(model_comparison_tool, results):
-#     """Display the results of model comparisons."""
-#     model_comparison_tool.display_results(results)
-
 def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
         output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
+
         # Simulate 4 different model outputs (actually the same for now)
         model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]
         try:
@@ -52,7 +45,7 @@ def manage_responses(history, response_container, prompt_container, model_compar
         except Exception as e:
             st.error(f"Error during model comparisons: {e}")
     if st.session_state["reset_chat"]:
-        history.reset()
+        history.reset()      
 
 def load_and_validate_config():
     """Load and validate configuration, return configs if valid, otherwise stop the app."""
@@ -81,20 +74,26 @@ def main_application_logic(configs, layout, sidebar):
 
 def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
     """Process the flow for an authenticated user."""
-    utils = Utilities()
     try:
-        pdf, doc_content = Utilities.attempt_pdf_upload(utils.handle_upload)
+        pdf, doc_content = Utilities.handle_file_upload()
         if pdf:
             st.header("GenAI Architecture Comparison Tool")
             sidebar.show_options()
 
             model_comparison = ModelComparison(number_of_models=4)
             model_configs = model_comparison.collect_model_configs()
-            Chatbot.initialize_chatbot_if_absent(st.session_state, utils, pdf, llm, redis_url)
+            
+            Chatbot.initialize_chatbot_if_absent(
+                session_state=st.session_state, 
+                utils=Utilities(),
+                pdf=pdf, 
+                llm=llm, 
+                redis_url=redis_url
+            )
+
             st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
             st.session_state["ready"] = True
 
-            # history = ChatHistory()
             history_model_1 = ChatHistory(history_key="chat_history")
             response_container, prompt_container = st.container(), st.container()
             manage_responses(history_model_1, response_container, prompt_container, model_comparison, model_configs)
@@ -102,10 +101,10 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
         st.error(f"Unexpected error during PDF upload or processing: {e}")
         st.stop()
 
+
 if __name__ == '__main__':
     initialize_default_session_variables()
     configs = load_and_validate_config()
     layout, sidebar = initialize_ui(configs)
-    utils = Utilities()
     main_application_logic(configs, layout, sidebar)
     sidebar.about()
