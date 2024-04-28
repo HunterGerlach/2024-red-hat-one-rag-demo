@@ -25,6 +25,16 @@ class Utilities:
         doc = docx.Document(file)
         text = [paragraph.text for paragraph in doc.paragraphs]
         return "\n".join(text)
+    
+
+    @staticmethod
+    def attempt_pdf_upload(upload_handler):
+        """Upload a PDF and return file and content if successful, or None otherwise."""
+        pdf_file, content = upload_handler()
+        if not pdf_file:
+            st.info("Upload a PDF file to get started", icon="👈")
+            return None, None
+        return pdf_file, content
 
     @staticmethod
     def handle_upload():

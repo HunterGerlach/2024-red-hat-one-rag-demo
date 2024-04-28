@@ -25,14 +25,6 @@ def initialize_default_session_variables():
     for key, value in default_values.items():
         st.session_state.setdefault(key, value)
 
-def attempt_pdf_upload(upload_handler):
-    """Upload a PDF and return file and content if successful, or None otherwise."""
-    pdf_file, content = upload_handler()
-    if not pdf_file:
-        st.info("Upload a PDF file to get started", icon="👈")
-        return None, None
-    return pdf_file, content
-
 def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url, history_key="chat_history"):
     """Initialize the chatbot if it's not already present in the session state."""
     if 'chatbot' not in session_state:
@@ -100,7 +92,7 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
     """Process the flow for an authenticated user."""
     utils = Utilities()
     try:
-        pdf, doc_content = attempt_pdf_upload(utils.handle_upload)
+        pdf, doc_content = Utilities.attempt_pdf_upload(utils.handle_upload)
         if pdf:
             st.header("GenAI Architecture Comparison Tool")
             sidebar.show_options()
