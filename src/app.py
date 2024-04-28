@@ -5,6 +5,7 @@ from langchain.llms import HuggingFaceTextGenInference
 from langchain.llms import Ollama
 from langchain.prompts import PromptTemplate
 
+from chat_management.chatbot import Chatbot
 from chat_management.chat_history import ChatHistory
 from ui_components.layout import Layout
 from ui_components.sidebar import Sidebar, Utilities
@@ -24,16 +25,6 @@ def initialize_default_session_variables():
     }
     for key, value in default_values.items():
         st.session_state.setdefault(key, value)
-
-def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url, history_key="chat_history"):
-    """Initialize the chatbot if it's not already present in the session state."""
-    if 'chatbot' not in session_state:
-        index_generator = SnowflakeGenerator(42)
-        index_name = str(next(index_generator))
-        print("Index Name: " + index_name)
-        chat_history = ChatHistory(history_key)
-        chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml", chat_history.history)
-        session_state["chatbot"] = chatbot
 
 def run_model_comparisons(model_comparison_tool, model_configs):
     """Run model comparisons and return the results."""
@@ -99,7 +90,7 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
 
             model_comparison = ModelComparison(number_of_models=4)
             model_configs = model_comparison.collect_model_configs()
-            initialize_chatbot_if_absent(st.session_state, utils, pdf, llm, redis_url)
+            Chatbot.initialize_chatbot_if_absent(st.session_state, utils, pdf, llm, redis_url)
             st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
             st.session_state["ready"] = True
 

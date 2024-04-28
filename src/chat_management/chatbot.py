@@ -3,6 +3,7 @@ import os
 from langchain.chains import ConversationalRetrievalChain, RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import ChatPromptTemplate
+from snowflake import SnowflakeGenerator
 
 from chat_management.chat_history import ChatHistory
 
@@ -14,6 +15,16 @@ class Chatbot:
         self.rds_retriever = rds_retriever
         self.llm = llm
         self.history = ChatHistory(history_key)
+
+    def initialize_chatbot_if_absent(session_state, utils, pdf, llm, redis_url, history_key="chat_history"):
+        """Initialize the chatbot if it's not already present in the session state."""
+        if 'chatbot' not in session_state:
+            index_generator = SnowflakeGenerator(42)
+            index_name = str(next(index_generator))
+            print("Index Name: " + index_name)
+            chat_history = ChatHistory(history_key)
+            chatbot = utils.setup_chatbot(pdf, llm, redis_url, index_name, "redis_schema.yaml", chat_history.history)
+            session_state["chatbot"] = chatbot
 
     def conversational_chat(self, query):
         chain = ConversationalRetrievalChain.from_llm(
