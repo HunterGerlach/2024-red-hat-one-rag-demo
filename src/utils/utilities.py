@@ -5,9 +5,6 @@ from yaml.loader import SafeLoader
 import os
 import tempfile
 
-from chat_management.chatbot import Chatbot
-from embeddings.doc_embedding import DocEmbedding
-
 class Utilities:    
     def read_pdf(file):
         import PyPDF2
@@ -76,23 +73,3 @@ class Utilities:
             st.sidebar.warning("Please upload a file to proceed.")
             return None, None
 
-    @staticmethod
-    def setup_chatbot(uploaded_file, llm, redis_url, index_name, schema, chat_history):
-        """
-        Sets up the chatbot with the uploaded file, model, and chat history
-        """
-        embeds = DocEmbedding()
-        with st.spinner("Embedding document..."):
-            if uploaded_file is None:
-                st.error("Please upload a file to get started.")
-                return None
-            uploaded_file.seek(0)
-            file = uploaded_file.read()
-
-            embeds.create_doc_embedding(file, redis_url, index_name)
-
-            retriever = embeds.get_doc_retriever(redis_url, index_name, schema)
-            chatbot = Chatbot(retriever, llm)
-            print(f"new chatbot is created with {index_name} {schema}.")
-        st.session_state["ready"] = True
-        return chatbot

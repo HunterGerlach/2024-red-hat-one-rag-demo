@@ -84,11 +84,11 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
             model_configs = model_comparison.collect_model_configs()
             
             Chatbot.initialize_chatbot_if_absent(
-                session_state=st.session_state, 
-                utils=Utilities(),
+                session_state=st.session_state,
                 pdf=pdf, 
                 llm=llm, 
-                redis_url=redis_url
+                redis_url=redis_url,
+                history_key="chat_history"
             )
 
             st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
