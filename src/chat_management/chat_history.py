@@ -42,3 +42,10 @@ class ChatHistory:
     def get_full_conversation(self):
         """Retrieve the full conversation history as a list of messages."""
         return [str(message) for message in self.history.chat_memory.messages]
+
+    def get_recent_context(self):
+        """Retrieve recent context to append to new queries for better LLM responses."""
+        # This is a simplified example:
+        last_messages = [str(msg) for msg in self.history.chat_memory.messages[-5:]]  # Get the last 5 messages
+        context = " ".join(last_messages)
+        return context

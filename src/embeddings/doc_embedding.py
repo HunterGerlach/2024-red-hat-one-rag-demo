@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from langchain.document_loaders import PyPDFium2Loader
+from langchain_community.document_loaders import PyPDFium2Loader
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.redis import Redis

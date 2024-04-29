@@ -1,6 +1,8 @@
 import streamlit as st
 import os
-from langchain.chains import ConversationalRetrievalChain
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains import LLMChain
+from langchain.schema import StrOutputParser
 from snowflake import SnowflakeGenerator
 from utils.utilities import Utilities
 from embeddings.doc_embedding import DocEmbedding
@@ -42,16 +44,78 @@ class Chatbot:
         st.error("Please upload a file to get started.")
         return None
 
-    async def conversational_chat(self, query):
-        """Perform conversational chat using threading for non-async libs."""
-        def synchronous_chat():
-            chain = ConversationalRetrievalChain.from_llm(
-                llm=self.llm,
-                memory=self.history.history,
-                retriever=self.rds_retriever
-            )
-            return chain({"question": query}, return_only_outputs=True)
+    # async def conversational_chat(self, query):
+    #     """Perform conversational chat using threading for non-async libs."""
+    #     def synchronous_chat():
+    #         chain = ConversationalRetrievalChain.from_llm(
+    #             llm=self.llm,
+    #             memory=self.history.history,
+    #             retriever=self.rds_retriever
+    #         )
+    #         return chain({"question": query}, return_only_outputs=True)
 
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(executor, synchronous_chat)
-        return result["answer"], self.rds_retriever
+    #     loop = asyncio.get_running_loop()
+    #     result = await loop.run_in_executor(executor, synchronous_chat)
+    #     return result["answer"], self.rds_retriever
+
+
+
+    async def conversational_chat(self, query):
+        prompt = f"You are an unhelpful assistant. How would you respond to: {query}"
+        response = await self.async_invoke_llm(prompt)
+        return response
+
+    # async def async_invoke_llm(self, prompt):
+    #     # Implement async handling if the underlying method supports it
+    #     response_buffer = ""  # Initialize a buffer for accumulating text
+    #     for chunk in self.llm._stream(prompt):
+    #         if chunk.text:
+    #             response_buffer += chunk.text  # Append each chunk to the buffer
+    #             st.write(response_buffer)  # Write/update the output with the accumulated buffer
+    
+    # async def async_invoke_llm(self, prompt):
+    #     # Implement async handling if the underlying method supports it
+    #     for response in self.llm.stream(prompt):
+    #         print(response)
+    #         st.write(response)
+
+
+    async def async_invoke_llm(self, prompt):
+        output_container = st.empty()  # Create a mutable placeholder
+        response_buffer = ""  # Initialize a buffer to accumulate text
+
+        for chunk in self.llm.stream(prompt):
+            if chunk:
+                response_buffer += chunk  # Append text to the buffer
+                output_container.markdown(response_buffer)  # Update the content of the output container
+
+        # return response
+
+
+
+    # async def conversational_chat(self, query):
+    #     """Perform conversational chat using threading for non-async libs."""
+    #     refined_query = self.refine_query(query)  # Refine the query before sending
+    #     result = await self.invoke_llm(refined_query)
+    #     return result
+
+    # def refine_query(self, query):
+    #     """Modify the query to include additional context or rephrase for clarity."""
+    #     # Example: Append historical context from previous interactions
+    #     context = self.history.get_recent_context()
+    #     refined_query = f"{context}\n\n{query}"
+    #     return refined_query
+
+    # async def invoke_llm(self, query):
+    #     """Asynchronous call to LLM with refined query."""
+    #     def synchronous_chat():
+    #         chain = ConversationalRetrievalChain.from_llm(
+    #             llm=self.llm,
+    #             memory=self.history.history,
+    #             retriever=self.rds_retriever
+    #         )
+    #         return chain({"question": query}, return_only_outputs=True)
+
+    #     loop = asyncio.get_running_loop()
+    #     result = await loop.run_in_executor(executor, synchronous_chat)
+    #     return result["answer"], self.rds_retriever

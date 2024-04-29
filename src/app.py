@@ -29,7 +29,8 @@ async def manage_responses(history, response_container, prompt_container, model_
     """Manage the responses and prompts for the chatbot."""
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
-        output, embeddings = await st.session_state["chatbot"].conversational_chat(user_input)
+        with st.chat_message("user"):
+            output = await st.session_state["chatbot"].conversational_chat(user_input)
 
         # Simulate 4 different model outputs (actually the same for now)
         model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]
