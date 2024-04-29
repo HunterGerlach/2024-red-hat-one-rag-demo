@@ -7,7 +7,8 @@ class ModelFactory:
     @staticmethod
     def create_inference_model(inference_config):
         """Create and return an inference model based on the provided configuration."""
-        if inference_config["type"] == "ollama":
+        model_type = inference_config.get("type", "ollama")
+        if model_type == "ollama":
             return Ollama(model="mistral")
         else:
             return HuggingFaceTextGenInference(

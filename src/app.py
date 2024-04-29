@@ -91,9 +91,9 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
             st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
             st.session_state["ready"] = True
 
-            history_model_1 = ChatHistory(history_key="chat_history")
+            history = ChatHistory(history_key="chat_history")
             response_container, prompt_container = st.container(), st.container()
-            manage_responses(history_model_1, response_container, prompt_container, model_comparison, model_configs)
+            manage_responses(history, response_container, prompt_container, model_comparison, model_configs)
     except Exception as e:
         st.error(f"Unexpected error during PDF upload or processing: {e}")
         st.stop()
