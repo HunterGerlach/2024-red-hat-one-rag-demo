@@ -100,24 +100,9 @@ class Sidebar:
             # Display a button to reset chat
             self.reset_chat_button()
 
-            # Optionally include other controls with expanders for better organization
-            # with st.expander("Model Selection"):
-                # self.model_selector()
-
             with st.expander("Temperature Control"):
                 self.temperature_slider()
 
             # Set default session state if not already set
             # st.session_state.setdefault("model", self.MODEL_OPTIONS[0])
             st.session_state.setdefault("temperature", self.TEMPERATURE_DEFAULT_VALUE)
-
-
-
-    # def show_options(self):
-    #     # with st.sidebar.expander("🛠️ Tools", expanded=True):
-    #     with st.sidebar():
-    #         self.reset_chat_button()
-    #         # self.model_selector()
-    #         # self.temperature_slider()
-    #         # st.session_state.setdefault("model", self.MODEL_OPTIONS[0])
-    #         # st.session_state.setdefault("temperature", self.TEMPERATURE_DEFAULT_VALUE)

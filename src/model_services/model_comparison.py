@@ -60,24 +60,6 @@ class ModelComparison:
     def run_redis_operations(self, model):
         return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
-    # def display_results(self, results):
-    #     cols = st.columns(len(results))
-    #     for col, (model_name, messages) in zip(cols, results.items()):
-    #         with col:
-    #             st.markdown(f"### Full Conversation from {model_name}")
-    #             for msg in messages:  # messages is now a list of strings
-    #                 st.write(msg)
-
-    # def display_results(self, results):
-    #     cols = st.columns(len(results))
-    #     for col, (model_name, messages) in zip(cols, results.items()):
-    #         with col:
-    #             st.markdown(f"### Full Conversation from {model_name}")
-    #             # Use markdown for each message to format it correctly
-    #             for msg in messages:  # Assuming msg is a string
-    #                 # Use triple backticks for block code formatting or other markdown syntax as needed
-    #                 st.markdown(f"```\n{msg}\n```")
-
     def display_results(self, results):
         cols = st.columns(len(results))
         for col, (model_name, messages) in zip(cols, results.items()):
@@ -102,14 +84,3 @@ class ModelComparison:
     def display_model_comparison_results(model_comparison_tool, results):
         """Display the results of model comparisons."""
         model_comparison_tool.display_results(results)
-
-    # def manage_comparison_display(self, full_conversation_histories, response_container):
-    #     """Display the model comparison results."""
-    #     try:
-    #         # Now display the full conversation for each model
-    #         self.display_model_comparison_results(full_conversation_histories)
-    #         # Assuming history.generate_messages() is responsible for rendering messages
-    #         # This method would now need to be called where the messages are actually being generated
-    #     except Exception as e:
-    #         st.error(f"Error during model comparisons: {e}")
-

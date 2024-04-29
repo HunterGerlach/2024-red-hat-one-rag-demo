@@ -40,8 +40,8 @@ class Chatbot:
         st.session_state["ready"] = True
         return chatbot
 
-    @staticmethod
-    def initialize_chatbot_if_absent(session_state, pdf, llm, redis_url, history_key="chat_history"):
+    @classmethod
+    def initialize_chatbot_if_absent(cls, session_state, pdf, llm, redis_url, history_key="chat_history"):
         """Initialize the chatbot if it's not already present in the session state."""
         if 'chatbot' not in session_state:
             index_generator = SnowflakeGenerator(42)
@@ -59,10 +59,3 @@ class Chatbot:
         )
         result = chain({"question": query}, return_only_outputs=True)
         return result["answer"], self.rds_retriever
-    
-    # def manage_chat_responses(self, user_input):
-    #     """Generate and handle chatbot responses."""
-    #     output, embeddings = self.conversational_chat(user_input)
-    #     self.history.add_message(HumanMessage(content=user_input))
-    #     self.history.add_message(AIMessage(content=output))
-    #     return output, embeddings
