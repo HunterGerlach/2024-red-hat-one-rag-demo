@@ -3,6 +3,7 @@ import os
 import streamlit as st
 
 import asyncio
+import time
 
 from chat_management.chatbot import Chatbot
 from chat_management.chat_history import ChatHistory
@@ -29,9 +30,6 @@ async def manage_responses(history, response_container, prompt_container, model_
     """Manage the responses and prompts for the chatbot."""
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
-        with st.chat_message("user"):
-            output = await st.session_state["chatbot"].conversational_chat(user_input)
-
         # Simulate 4 different model outputs (actually the same for now)
         model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]
         try:
@@ -41,7 +39,8 @@ async def manage_responses(history, response_container, prompt_container, model_
                 model_name: full_conversation for model_name in model_names
             }
             # Now display the full conversation for each model
-            ModelComparison.display_model_comparison_results(model_comparison, full_conversation_histories)
+            await ModelComparison.display_model_comparison_results(model_comparison, user_input, full_conversation_histories)
+
             history.generate_messages(response_container)
         except Exception as e:
             st.error(f"Error during model comparisons: {e}")
@@ -92,7 +91,9 @@ async def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_u
                 history_key="chat_history"
             )
 
-            st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
+            # success = st.success("Document successfully embedded in vector database. Chatbot initialized successfully.")
+            # time.sleep(3) # Wait for 3 seconds
+            # success.empty() # Clear the alert
             st.session_state["ready"] = True
 
             history = ChatHistory(history_key="chat_history")

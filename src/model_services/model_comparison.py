@@ -60,11 +60,14 @@ class ModelComparison:
     def run_redis_operations(self, model):
         return f"Result from {model.name} with Redis-based vector search at {model.endpoint}"
 
-    def display_results(self, results):
+    async def display_results(self, user_input, results):
         cols = st.columns(len(results))
         for col, (model_name, messages) in zip(cols, results.items()):
             with col:
                 st.markdown(f"### Full Conversation from {model_name}")
+
+                with st.chat_message("user"):
+                    output = await st.session_state["chatbot"].conversational_chat(user_input)
                 for msg in messages:
                     # Extract the message content after the "content=" part
                     # Assuming each message is a string that starts with "content='...'"
@@ -82,6 +85,6 @@ class ModelComparison:
         """Run model comparisons and return the results."""
         return model_comparison_tool.run_model_comparisons(model_configs)
 
-    def display_model_comparison_results(model_comparison_tool, results):
+    async def display_model_comparison_results(model_comparison_tool, user_input, results):
         """Display the results of model comparisons."""
-        model_comparison_tool.display_results(results)
+        await model_comparison_tool.display_results(user_input, results)
