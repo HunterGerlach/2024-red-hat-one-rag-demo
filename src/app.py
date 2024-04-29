@@ -2,6 +2,8 @@ import os
 
 import streamlit as st
 
+import asyncio
+
 from chat_management.chatbot import Chatbot
 from chat_management.chat_history import ChatHistory
 from ui_components.layout import Layout
@@ -23,10 +25,11 @@ def initialize_default_session_variables():
     for key, value in default_values.items():
         st.session_state.setdefault(key, value)
 
-def manage_responses(history, response_container, prompt_container, model_comparison, model_configs):
+async def manage_responses(history, response_container, prompt_container, model_comparison, model_configs, layout):
+    """Manage the responses and prompts for the chatbot."""
     is_ready, user_input, submit_button = layout.prompt_form()
     if is_ready:
-        output, embeddings = st.session_state["chatbot"].conversational_chat(user_input)
+        output, embeddings = await st.session_state["chatbot"].conversational_chat(user_input)
 
         # Simulate 4 different model outputs (actually the same for now)
         model_names = ["Model 1", "Model 2", "Model 3", "Model 4"]
@@ -60,16 +63,16 @@ def initialize_ui(configs):
     sidebar.show_logo(configs)
     return layout, sidebar
 
-def main_application_logic(configs, layout, sidebar):
+async def main_application_logic(configs, layout, sidebar):
     """Handle the main application logic."""
     redis_url = RedisManager.build_redis_connection_url(configs['redis'])
     llm = ModelFactory.create_inference_model(configs['inference_server'])
 
     sidebar.show_login(configs)
     if st.session_state["authentication_status"]:
-        process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url)
+        await process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url)
 
-def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
+async def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
     """Process the flow for an authenticated user."""
     try:
         pdf, doc_content = Utilities.handle_file_upload()
@@ -93,15 +96,18 @@ def process_authenticated_user_flow(configs, layout, sidebar, llm, redis_url):
 
             history = ChatHistory(history_key="chat_history")
             response_container, prompt_container = st.container(), st.container()
-            manage_responses(history, response_container, prompt_container, model_comparison, model_configs)
+            await manage_responses(history, response_container, prompt_container, model_comparison, model_configs, layout)
     except Exception as e:
         st.error(f"Unexpected error during PDF upload or processing: {e}")
         st.stop()
 
-
-if __name__ == '__main__':
+async def main():
     initialize_default_session_variables()
     configs = load_and_validate_config()
     layout, sidebar = initialize_ui(configs)
-    main_application_logic(configs, layout, sidebar)
+    await main_application_logic(configs, layout, sidebar)
     sidebar.about()
+
+if __name__ == '__main__':
+    asyncio.run(main())
+
