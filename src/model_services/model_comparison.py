@@ -76,6 +76,7 @@ class ModelComparison:
 
                     # Display the message content
                     st.write(message_content)  # You can use st.markdown if you need markdown formatting
+                    # st.write_stream(message_content)
 
     def run_model_comparisons(model_comparison_tool, model_configs):
         """Run model comparisons and return the results."""

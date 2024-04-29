@@ -1,9 +1,6 @@
 import os
 
 import streamlit as st
-from langchain.llms import HuggingFaceTextGenInference
-from langchain.llms import Ollama
-from langchain.prompts import PromptTemplate
 
 from chat_management.chatbot import Chatbot
 from chat_management.chat_history import ChatHistory

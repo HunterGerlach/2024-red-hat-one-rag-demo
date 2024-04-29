@@ -1,10 +1,7 @@
 import streamlit as st
 import os
-from langchain.chains import ConversationalRetrievalChain, RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain.prompts.chat import ChatPromptTemplate
+from langchain.chains import ConversationalRetrievalChain
 from snowflake import SnowflakeGenerator
-from langchain.schema import HumanMessage, AIMessage
 from utils.utilities import Utilities
 from embeddings.doc_embedding import DocEmbedding
 from chat_management.chat_history import ChatHistory

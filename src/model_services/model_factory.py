@@ -18,6 +18,6 @@ class ModelFactory:
                 typical_p=float(os.getenv('TYPICAL_P', '0.95')),
                 temperature=float(os.getenv('TEMPERATURE', '0.9')),
                 repetition_penalty=float(os.getenv('REPETITION_PENALTY', '1.01')),
-                streaming=False,
+                streaming=True,
                 verbose=False
             )
