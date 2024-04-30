@@ -39,6 +39,7 @@ class Layout:
                 key="input",
                 label_visibility="collapsed",
             )
+            
             submit_button = st.form_submit_button(label="Run Comparison")
 
             is_ready = submit_button and user_input
