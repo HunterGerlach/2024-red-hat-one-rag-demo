@@ -52,5 +52,15 @@ class DocEmbedding:
             schema=schema,
         )
         retriever = rds.as_retriever(search_type="similarity",
-                                     search_kwargs={"k": 4, "similarity": 0.3})
+                                     search_kwargs={"k": 2, "similarity": 0.3})
         return retriever
+    
+    def use_retriever(self, retriever, query):
+        try:
+            results = retriever.search(query)  # Adjust according to actual method
+            return results
+        except AttributeError as e:
+            print(f"An error occurred: {str(e)}")
+            return None
+
+

@@ -9,7 +9,7 @@ class ModelFactory:
         """Create and return an inference model based on the provided configuration."""
         model_type = inference_config.get("type", "ollama")
         if model_type == "ollama":
-            return Ollama(model="mixtral")
+            return Ollama(model="mixtral") # jefferyb/granite
         else:
             return HuggingFaceTextGenInference(
                 inference_server_url=os.getenv('INFERENCE_SERVER_URL', inference_config["url"]),
