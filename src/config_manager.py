@@ -1,6 +1,7 @@
 import yaml
 import os
 import streamlit as st
+from model_services.model_config import ModelConfig
 
 class ConfigManager:
     """ Manages application configuration. """
@@ -27,3 +28,18 @@ class ConfigManager:
         if not is_valid:
             st.error("Configuration details are missing or incomplete.")
         return is_valid
+    
+    @staticmethod
+    def get_model_configs():
+        """ Retrieve model configurations from the YAML file. """
+        configs = ConfigManager.load_config_details()
+        if configs and 'architectures' in configs:
+            return [ModelConfig(
+                name=arch['name'],
+                description=arch['description'],
+                endpoint=arch['endpoint'],
+                uses_rag=arch['uses_rag'],
+                model_name=arch['model_name']) for arch in configs['architectures']]
+        else:
+            st.error("Model configurations are missing or incomplete.")
+            return []

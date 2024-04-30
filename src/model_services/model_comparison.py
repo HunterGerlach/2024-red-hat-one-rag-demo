@@ -1,6 +1,7 @@
 import streamlit as st
 import threading
 from model_services.model_config import ModelConfig
+from config_manager import ConfigManager
 
 class ModelComparison:
     """
@@ -8,12 +9,7 @@ class ModelComparison:
     """
     def __init__(self, number_of_models=4):
         self.number_of_models = number_of_models
-        self.all_models = [
-            ModelConfig('Base Model', 'A baseline model', 'http://0.0.0.0:11434', False, 'granite-7b'),
-            ModelConfig('Base Model + RAG', 'Baseline model with RAG', 'https://api.ollama.ai/base-rag', True, 'granite-7b'),
-            ModelConfig('InstructLab-Aligned Model', 'Instruct model with alignments', 'https://api.ollama.ai/instruct-aligned', False, 'granite-7b-instruct-aligned'),
-            ModelConfig('InstructLab-Aligned Model + RAG', 'Instruct model with alignments and RAG', 'https://api.ollama.ai/instruct-rag', True, 'granite-7b-instruct-aligned')
-        ]
+        self.all_models = ConfigManager.get_model_configs()
 
     def display_model_configs(self, model_configs):
         cols = st.columns(self.number_of_models)
